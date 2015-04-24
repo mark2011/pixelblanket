@@ -11,13 +11,12 @@ open Serilog
 open System
 open System.Text
 open System.Threading
-let display (photos:FileInfo2 list) index0 (t0:DateTime) (t1:DateTime) =
-    if photos = [] then
+let pixbufAndMarkupAt (t1:DateTime) = function
+    | None ->
         blackPixbuf, "\n\n\n\n\nPlace 1920x1080 jpg files\n   in folder /home/pi/Pictures\n\n\n" |> markup
-    else
+    | Some photo ->
         let pixbuf =
-            let photoIndex = modulo (index0 + t1.Minute - t0.Minute) photos.Length
-            List.nth photos photoIndex |> getImagePixbuf
+            photo |> getImagePixbuf
         let photoMarkup =
             (if t1.Second < 10 then lowerRight 10 (t1.ToString "h:mm tt") else "") |> markup
         pixbuf, photoMarkup
@@ -47,9 +46,10 @@ type MyWindow () as this =
                 Application.Quit ()
                 e.RetVal <- true
             | DrawingAreaExposed :: tail ->
-//              Serilog.Log.Warning ("display time lag {Milliseconds}", (DateTime.Now - getTime tail).Milliseconds)
-                let photos, photosTime, accumulatedLeftAndRightButtons = getPhotos 0 tail
-                let pixbuf, markup = display photos accumulatedLeftAndRightButtons photosTime (getTime tail)
+                let deltaT = (DateTime.Now - getTime tail).Milliseconds
+                if deltaT >= 950 then
+                    Serilog.Log.Warning ("display time lag {Milliseconds}", deltaT)
+                let pixbuf, markup = getPhoto tail |> pixbufAndMarkupAt (getTime tail)
                 paintDrawingArea drawingArea pixbuf markup
                 Thread.Sleep 500
                 this.QueueDraw ()

@@ -1,19 +1,24 @@
 ﻿module PixelBlanket.State
 open PixelBlanket.Types
-let rec getTime =
-    function
+let rec getTime = function
     | Clock time :: _ -> time
-    | _ :: tail -> getTime tail
-    | [] -> missingData "getTime"
-let rec getPhotos2 accumulatedLeftAndRightButtons =
-    function
-    | PhotosChanged photos :: tail -> photos, getTime tail, accumulatedLeftAndRightButtons
-    | _ :: tail -> getPhotos2 accumulatedLeftAndRightButtons tail
-    | [] -> missingData "getPhotos2"
-let rec getPhotos accumulatedLeftAndRightButtons =
-    function
-    | PhotosChanged photos :: tail -> getPhotos2 accumulatedLeftAndRightButtons (PhotosChanged photos :: tail)
-    | RemoteButton Rewind :: tail -> getPhotos2 accumulatedLeftAndRightButtons tail
-    | RemoteButton (Direction (n, 0)) :: tail -> getPhotos (accumulatedLeftAndRightButtons + n) tail
-    | _ :: tail -> getPhotos accumulatedLeftAndRightButtons tail
-    | [] -> missingData "getPhotos"
+    | _ :: tail       -> getTime tail
+    | []              -> missingData "getTime"
+let rec idle = function
+    | RemoteButton _ :: _     -> false
+    | PhotosChanged _ :: _    -> false
+    | Clock time :: _
+        when time.Second = 35 -> true
+    | []                      -> true
+    | _ :: tail               -> idle tail
+let getPhoto =
+    let rec getPhoto' counting index = function
+        | PhotosChanged photos :: tail                    -> Some (List.nth photos (modulo index photos.Length))
+        | RemoteButton Rewind :: tail when counting       -> getPhoto' false index tail
+        | RemoteButton (Direction (n, 0)) :: tail
+            when counting                                 -> getPhoto' true (index + n) tail
+        | Clock time :: tail
+            when counting && time.Second = 0 && idle tail -> getPhoto' true (index + 1) tail
+        | _ :: tail                                       -> getPhoto' counting index tail
+        | []                                              -> None
+    getPhoto' true 0

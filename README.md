@@ -6,14 +6,18 @@ raspberry pi tv browser (photos, etc) in f#
 * display one photo per minute from the /home/pi/Pictures folder. Photos
 are expected to be jpg files with a resolution of 1920 x 1080. At the
 beginning of the minute, the current time is displayed in the corner
-of the screen
+of the screen.
+Any user or data input during the last 25 seconds of the minute period will
+suppress moving to the next photo
 * respond to left, right, and rewind buttons on the remote control
 (requires a cec-enabled tv). Left and right change the photo by one
 position, rewind starts back at the beginning
 
 ## Operating Instructions
+```
 cd PixelBlanket
 ./run.sh
+```
 
 ## Development
 I have not succeeded in making an f# development environment on the pi,
