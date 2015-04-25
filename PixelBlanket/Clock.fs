@@ -2,10 +2,14 @@
 open PixelBlanket.Types
 open System
 open System.Threading
-let nowToTheSecond () =
+let toTheMinute time =
     let reference = DateTime.Today
-    let now = DateTime.Now
-    reference + TimeSpan.FromSeconds (float (int (now - reference).TotalSeconds))
+    reference + TimeSpan.FromMinutes (float (int (time - reference).TotalMinutes))
+let toTheSecond time =
+    let reference = DateTime.Today
+    reference + TimeSpan.FromSeconds (float (int (time - reference).TotalSeconds))
+let nowToTheSecond () =
+    toTheSecond DateTime.Now
 let clockEvent = new Event<PixelEvent> ()
 let mutable latchedClock = nowToTheSecond ()
 let startClock () =

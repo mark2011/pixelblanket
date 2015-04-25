@@ -9,9 +9,13 @@ beginning of the minute, the current time is displayed in the corner
 of the screen.
 Any user or data input during the last 25 seconds of the minute period will
 suppress moving to the next photo
+* display clock and ring chimes on the quarter hour
 * respond to left, right, and rewind buttons on the remote control
 (requires a cec-enabled tv). Left and right change the photo by one
 position, rewind starts back at the beginning
+* runs on raspbian/pi and wheezy/linux with photos centered on
+non-hdmi 1080 screen resolutions and the with left/right/home keypad keys
+mapping to left/right/rewind functions
 
 ## Operating Instructions
 ```

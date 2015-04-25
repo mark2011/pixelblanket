@@ -5,7 +5,7 @@ open System.Text
 let numberOfLines (text:string) =
     (text.Split ([|'\n'|])).Length
 let widthForHeight n =
-    let basicWidth = aspectWidth n
+    let basicWidth = 16 * n / 9
     basicWidth * 2 + 3
 let withSpacer height (line:string) =
     new String (' ', widthForHeight height - line.Length) + line

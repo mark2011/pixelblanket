@@ -5,9 +5,8 @@ open Microsoft.FSharp.Reflection
 open System
 open System.Threading
 
-let aspectWidth height = height * 16 / 9
-let screenHeight = 1080
-let screenWidth = aspectWidth screenHeight
+let mutable screenWidth = 1920
+let mutable screenHeight = 1080
 let missingData msg = raise (new ApplicationException (sprintf "Missing data - %s" msg))
 let invalidData msg = raise (new ApplicationException (sprintf "Invalid data - %s" msg))
 let modulo n m = ((n % m) + m) % m
@@ -43,13 +42,15 @@ type TvInput = Tv | Hdmi of int with
         | Hdmi n -> sprintf "Hdmi %d" n
         | _ -> toString this
 type PixelEvent =
+    | PixelQuit
     | DrawingAreaExposed
     | DeleteWindow of DeleteEventArgs
     | Clock of DateTime
     | PhotosChanged of FileInfo2 list
     | TvPower of TvPower
     | TvInput of TvInput
-    | RemoteButton of RemoteButton with
+    | RemoteButton of RemoteButton
+    | KeyPress of Gdk.Key with
     member this.toString =
         match this with
         | Clock t -> "Clock " + (t.ToString ())
@@ -61,4 +62,14 @@ type PixelEvent =
             sprintf "TvInput %s" input.toString
         | RemoteButton button ->
             sprintf "RemoteButton %s" button.toString
+        | KeyPress key ->
+            sprintf "KeyPress %A" key
+        | _ -> toString this
+type Screen =
+    | NoPhotosScreen
+    | ClockScreen
+    | PhotoScreen of FileInfo2 with
+    member this.toString =
+        match this with
+        | PhotoScreen f -> sprintf "PhotoScreen %s" f.toString
         | _ -> toString this

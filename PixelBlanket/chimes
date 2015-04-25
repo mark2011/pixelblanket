@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# wait for clock screen to be visible before attracting attention
+sleep 2
+
+i=0
+while [ $i -lt $1 ]
+do
+    aplay -q ../../chime.wav
+    i=$[$i + 1]
+done

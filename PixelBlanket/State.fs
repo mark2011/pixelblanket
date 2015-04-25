@@ -1,24 +1,42 @@
 ﻿module PixelBlanket.State
 open PixelBlanket.Types
+open System
 let rec getTime = function
     | Clock time :: _ -> time
     | _ :: tail       -> getTime tail
     | []              -> missingData "getTime"
-let rec idle = function
+let rec idle n = function
     | RemoteButton _ :: _     -> false
     | PhotosChanged _ :: _    -> false
     | Clock time :: _
-        when time.Second = 35 -> true
+        when time.Second = n  -> true
     | []                      -> true
-    | _ :: tail               -> idle tail
-let getPhoto =
-    let rec getPhoto' counting index = function
-        | PhotosChanged photos :: tail                    -> Some (List.nth photos (modulo index photos.Length))
-        | RemoteButton Rewind :: tail when counting       -> getPhoto' false index tail
-        | RemoteButton (Direction (n, 0)) :: tail
-            when counting                                 -> getPhoto' true (index + n) tail
-        | Clock time :: tail
-            when counting && time.Second = 0 && idle tail -> getPhoto' true (index + 1) tail
-        | _ :: tail                                       -> getPhoto' counting index tail
-        | []                                              -> None
-    getPhoto' true 0
+    | _ :: tail               -> idle n tail
+let quiet = idle 35
+let rec enteredQuietly = function
+    | [] -> false
+    | Clock time :: tail when time.Second = 0 -> quiet tail
+    | _ :: tail -> enteredQuietly tail
+let chimeTime (time:DateTime) =
+    modulo time.Minute 15 = 0
+type CountingOrNot = Counting | NotCounting
+let getScreen events =
+    if chimeTime (getTime events) && idle 0 events && enteredQuietly events then
+        ClockScreen
+    else
+        let rec getPhotoScreen countingOrNot index = function
+            | [] -> NoPhotosScreen
+            | event :: tail ->
+                let add n = getPhotoScreen Counting (index + n) tail
+                let stopCounting () = getPhotoScreen NotCounting index tail
+                match countingOrNot, event with
+                | _, PhotosChanged photos            -> PhotoScreen (List.nth photos (modulo index photos.Length))
+                | NotCounting, _
+                | _, RemoteButton Rewind             -> stopCounting ()
+                | _, RemoteButton (Direction (n, 0)) -> add n
+                | _, Clock time when
+                       time.Second = 0
+                    && quiet tail
+                    && not (chimeTime time)          -> add 1
+                | _, _                               -> add 0
+        getPhotoScreen Counting 0 events

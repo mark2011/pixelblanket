@@ -67,6 +67,8 @@
     <Compile Include="Files.fs" />
     <Compile Include="Markup.fs" />
     <Compile Include="GtkSupport.fs" />
+    <Compile Include="Sound.fs" />
+    <Compile Include="Keyboard.fs" />
     <Compile Include="MainWindow.fs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.1\Framework\v4.0\Microsoft.FSharp.Targets" />
